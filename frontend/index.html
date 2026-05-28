@@ -1,0 +1,1551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WE-देसी — Library Management System</title>
+  <meta name="description" content="Premium Library Management Dashboard — WE-देसी">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Inter Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Tailwind Config -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { inter: ['Inter', 'system-ui', 'sans-serif'] },
+          colors: { canvas: '#0f172a', charcoal: '#192135', sidebar: '#111827' }
+        }
+      }
+    }
+  </script>
+
+  <!-- Custom Animations & Scrollbar -->
+  <style>
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes slideInRight {
+      from { opacity: 0; transform: translateX(80px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes slideOutRight {
+      to { opacity: 0; transform: translateX(80px); }
+    }
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 20px rgba(59,130,246,0.15); }
+      50%      { box-shadow: 0 0 40px rgba(59,130,246,0.25); }
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .animate-fade-in-up { animation: fadeInUp 0.4s ease-out both; }
+    .animate-toast-in   { animation: slideInRight 0.35s cubic-bezier(0.16,1,0.3,1) both; }
+    .animate-toast-out  { animation: slideOutRight 0.3s ease forwards; }
+    .animate-pulse-glow { animation: pulse-glow 3s ease-in-out infinite; }
+    .animate-spin       { animation: spin 1s linear infinite; }
+
+    /* Stagger children */
+    .stagger > *:nth-child(1) { animation-delay: 0.03s; }
+    .stagger > *:nth-child(2) { animation-delay: 0.06s; }
+    .stagger > *:nth-child(3) { animation-delay: 0.09s; }
+    .stagger > *:nth-child(4) { animation-delay: 0.12s; }
+    .stagger > *:nth-child(5) { animation-delay: 0.15s; }
+    .stagger > *:nth-child(6) { animation-delay: 0.18s; }
+    .stagger > *:nth-child(7) { animation-delay: 0.21s; }
+    .stagger > *:nth-child(8) { animation-delay: 0.24s; }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 999px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.15); }
+
+    /* Line clamp utility */
+    .line-clamp-2 {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+  </style>
+</head>
+
+<body class="bg-canvas font-inter text-slate-200 antialiased min-h-screen overflow-x-hidden">
+
+  <!-- ══════════════════════════════════════════════
+       LOGIN SCREEN
+       ══════════════════════════════════════════════ -->
+  <section id="loginScreen" class="min-h-screen flex items-center justify-center px-4 relative">
+    <!-- Ambient glow -->
+    <div class="absolute top-1/4 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-blue-500/[0.07] rounded-full blur-[120px] pointer-events-none"></div>
+
+    <div class="w-full max-w-md relative z-10">
+      <!-- Brand -->
+      <div class="text-center mb-8 animate-fade-in-up">
+        <h1 class="text-5xl font-black bg-gradient-to-r from-blue-400 via-violet-400 to-fuchsia-400 bg-clip-text text-transparent tracking-tight">
+          WE-देसी
+        </h1>
+        <p class="text-slate-500 mt-2 text-sm font-medium tracking-wide">Library Management System</p>
+      </div>
+
+      <!-- Glassmorphic Login Card -->
+      <div class="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl shadow-2xl overflow-hidden animate-fade-in-up" style="animation-delay:0.1s">
+
+        <!-- Tab Bar -->
+        <div class="flex border-b border-white/[0.06]">
+          <button class="login-tab flex-1 py-4 text-sm font-semibold text-center border-b-2 border-blue-500 text-white transition-all duration-200" data-form="studentLoginForm">Student</button>
+          <button class="login-tab flex-1 py-4 text-sm font-semibold text-center border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition-all duration-200" data-form="facultyLoginForm">Faculty</button>
+          <button class="login-tab flex-1 py-4 text-sm font-semibold text-center border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition-all duration-200" data-form="adminLoginForm">Admin</button>
+        </div>
+
+        <!-- Forms Container -->
+        <div class="p-8">
+
+          <!-- Student Login -->
+          <form id="studentLoginForm" class="login-form" autocomplete="off">
+            <div class="mb-4">
+              <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Student ID</label>
+              <input type="text" id="studentLoginId" class="w-full px-4 py-3 bg-white/[0.04] border border-white/[0.08] rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all duration-200" placeholder="Enter your Student ID" required>
+            </div>
+            <div class="mb-5">
+              <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Password</label>
+              <input type="password" id="studentLoginPassword" class="w-full px-4 py-3 bg-white/[0.04] border border-white/[0.08] rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all duration-200" placeholder="Enter your password" required>
+            </div>
+            <button type="submit" class="w-full py-3.5 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-xl transition-all duration-200 hover:shadow-lg hover:shadow-blue-500/25 active:scale-[0.98]">
+              Sign In
+            </button>
+            <p class="text-center text-xs text-slate-500 mt-4">Enter your credentials to access your dashboard</p>
+          </form>
+
+          <!-- Faculty Login -->
+          <form id="facultyLoginForm" class="login-form hidden" autocomplete="off">
+            <div class="mb-4">
+              <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Faculty ID</label>
+              <input type="text" id="facultyLoginId" class="w-full px-4 py-3 bg-white/[0.04] border border-white/[0.08] rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all duration-200" placeholder="Enter your Faculty ID" required>
+            </div>
+            <div class="mb-5">
+              <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Password</label>
+              <input type="password" id="facultyLoginPassword" class="w-full px-4 py-3 bg-white/[0.04] border border-white/[0.08] rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all duration-200" placeholder="Enter your password" required>
+            </div>
+            <button type="submit" class="w-full py-3.5 bg-violet-500 hover:bg-violet-600 text-white font-semibold rounded-xl transition-all duration-200 hover:shadow-lg hover:shadow-violet-500/25 active:scale-[0.98]">
+              Sign In
+            </button>
+            <p class="text-center text-xs text-slate-500 mt-4">Enter your credentials to access your dashboard</p>
+          </form>
+
+          <!-- Admin Login -->
+          <form id="adminLoginForm" class="login-form hidden" autocomplete="off">
+            <div class="mb-5">
+              <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Admin Password</label>
+              <input type="password" id="adminLoginPassword" class="w-full px-4 py-3 bg-white/[0.04] border border-white/[0.08] rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all duration-200" placeholder="Enter admin password" required>
+            </div>
+            <button type="submit" class="w-full py-3.5 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-xl transition-all duration-200 hover:shadow-lg hover:shadow-emerald-500/25 active:scale-[0.98]">
+              Access Admin Portal
+            </button>
+            <p class="text-center text-xs text-slate-500 mt-4">Restricted access — admin credentials required</p>
+          </form>
+
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <p class="text-center text-xs text-slate-600 mt-6 animate-fade-in-up" style="animation-delay:0.2s">© 2026 WE-देसी — Online Library Management System</p>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════════
+       DASHBOARD
+       ══════════════════════════════════════════════ -->
+  <div id="dashboard" class="hidden">
+
+    <!-- Sidebar Overlay (mobile) -->
+    <div id="sidebarOverlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-30 hidden lg:hidden transition-opacity duration-300"></div>
+
+    <!-- ── Fixed Sidebar ── -->
+    <aside id="sidebar" class="fixed left-0 top-0 bottom-0 w-[260px] bg-sidebar border-r border-white/[0.06] flex flex-col z-40 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out">
+
+      <!-- Brand -->
+      <div class="px-6 py-5 border-b border-white/[0.06]">
+        <h1 class="text-xl font-black bg-gradient-to-r from-blue-400 to-violet-400 bg-clip-text text-transparent">WE-देसी</h1>
+        <p class="text-[0.65rem] text-slate-500 mt-0.5 tracking-wider uppercase font-medium">Library Management</p>
+      </div>
+
+      <!-- Navigation -->
+      <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+        <!-- Catalog — all roles -->
+        <button class="nav-item w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:bg-white/[0.05] hover:text-white transition-all duration-200 group bg-white/[0.08]" data-panel="catalogPanel" data-role="student,faculty,admin">
+          <svg class="w-[18px] h-[18px] text-blue-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/></svg>
+          Catalog
+        </button>
+
+        <!-- My Books — student, faculty -->
+        <button class="nav-item w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:bg-white/[0.05] hover:text-white transition-all duration-200 group" data-panel="myBooksPanel" data-role="student,faculty">
+          <svg class="w-[18px] h-[18px] text-slate-400 group-hover:text-blue-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z"/></svg>
+          My Books
+        </button>
+
+        <!-- Register Users — admin -->
+        <button class="nav-item w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:bg-white/[0.05] hover:text-white transition-all duration-200 group hidden" data-panel="registerPanel" data-role="admin">
+          <svg class="w-[18px] h-[18px] text-slate-400 group-hover:text-blue-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M18 7.5v3m3-3h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM4 19.235v-.11a6.375 6.375 0 0112.75 0v.109A12.318 12.318 0 0110.374 21c-2.331 0-4.512-.645-6.374-1.766z"/></svg>
+          Register Users
+        </button>
+
+        <!-- Active Loans — admin only -->
+        <button class="nav-item w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:bg-white/[0.05] hover:text-white transition-all duration-200 group hidden" data-panel="loansPanel" data-role="admin">
+          <svg class="w-[18px] h-[18px] text-slate-400 group-hover:text-blue-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
+          Active Loans
+        </button>
+
+
+        <!-- Book Search — all roles -->
+        <button class="nav-item w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:bg-white/[0.05] hover:text-white transition-all duration-200 group" data-panel="searchPanel" data-role="student,faculty,admin">
+          <svg class="w-[18px] h-[18px] text-slate-400 group-hover:text-blue-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
+          Book Search
+        </button>
+
+        <!-- Account — student, faculty -->
+        <button class="nav-item w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:bg-white/[0.05] hover:text-white transition-all duration-200 group" data-panel="accountPanel" data-role="student,faculty">
+          <svg class="w-[18px] h-[18px] text-slate-400 group-hover:text-blue-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          Account
+        </button>
+      </nav>
+
+      <!-- User Info + Logout -->
+      <div class="px-4 py-4 border-t border-white/[0.06]">
+        <div class="flex items-center gap-3 mb-3 px-2">
+          <div class="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500/20 to-violet-500/20 border border-white/[0.08] flex items-center justify-center flex-shrink-0">
+            <span class="text-sm font-bold text-blue-400" id="sidebarUserInitial">?</span>
+          </div>
+          <div class="min-w-0">
+            <p class="text-sm font-semibold text-white truncate" id="sidebarUserName">User</p>
+            <p class="text-[0.65rem] text-slate-500 uppercase tracking-wider font-medium" id="sidebarUserRole">Role</p>
+          </div>
+        </div>
+        <button id="logoutBtn" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium text-red-400 hover:bg-red-500/10 transition-all duration-200">
+          <svg class="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"/></svg>
+          Sign Out
+        </button>
+      </div>
+    </aside>
+
+    <!-- ── Mobile Header ── -->
+    <header class="lg:hidden fixed top-0 left-0 right-0 h-14 bg-sidebar/95 backdrop-blur-md border-b border-white/[0.06] flex items-center px-4 z-20">
+      <button id="hamburgerBtn" class="p-2 -ml-1 text-slate-400 hover:text-white transition-colors">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
+      </button>
+      <h1 class="ml-3 text-lg font-bold bg-gradient-to-r from-blue-400 to-violet-400 bg-clip-text text-transparent">WE-देसी</h1>
+    </header>
+
+    <!-- ══════════════════════════════════════════════
+         MAIN CONTENT AREA
+         ══════════════════════════════════════════════ -->
+    <main class="lg:ml-[260px] min-h-screen p-5 lg:p-8 pt-[4.5rem] lg:pt-8">
+
+      <!-- ── CATALOG PANEL ── -->
+      <section id="catalogPanel" class="panel">
+        <div class="flex items-center justify-between flex-wrap gap-4 mb-6">
+          <div>
+            <h2 class="text-2xl font-bold text-white">Book Catalog</h2>
+            <p class="text-sm text-slate-500 mt-0.5">Browse the complete library inventory</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <button id="toggleAddBookBtn" data-role="admin" class="flex items-center gap-2 px-4 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-sm font-semibold text-emerald-400 hover:bg-emerald-500/20 transition-all duration-200 hidden">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              Add Book
+            </button>
+            <button id="refreshCatalogBtn" class="flex items-center gap-2 px-4 py-2 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm font-medium text-slate-300 hover:bg-white/[0.08] hover:text-white transition-all duration-200">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182M2.985 19.644l3.181-3.183"/></svg>
+              Refresh
+            </button>
+          </div>
+        </div>
+
+        <!-- Stats Row -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+          <div class="bg-charcoal border border-white/[0.06] rounded-xl p-5 relative overflow-hidden">
+            <div class="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-blue-500 to-violet-500 rounded-t-xl"></div>
+            <p class="text-[0.7rem] font-semibold uppercase tracking-wider text-slate-400 mb-1">Total Titles</p>
+            <p class="text-3xl font-extrabold text-white" id="statTotalTitles">--</p>
+          </div>
+          <div class="bg-charcoal border border-white/[0.06] rounded-xl p-5 relative overflow-hidden">
+            <div class="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-t-xl"></div>
+            <p class="text-[0.7rem] font-semibold uppercase tracking-wider text-slate-400 mb-1">Available Copies</p>
+            <p class="text-3xl font-extrabold text-white" id="statTotalCopies">--</p>
+          </div>
+          <div class="bg-charcoal border border-white/[0.06] rounded-xl p-5 relative overflow-hidden">
+            <div class="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-red-500 to-amber-500 rounded-t-xl"></div>
+            <p class="text-[0.7rem] font-semibold uppercase tracking-wider text-slate-400 mb-1">Out of Stock</p>
+            <p class="text-3xl font-extrabold text-white" id="statOutOfStock">--</p>
+          </div>
+        </div>
+
+        <!-- Add Book Section (collapsible) -->
+        <div id="addBookSection" class="mb-8 hidden animate-fade-in-up">
+          <div class="bg-charcoal border border-white/[0.06] rounded-xl overflow-hidden shadow-xl">
+            <div class="px-6 py-4 border-b border-white/[0.06] flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <svg class="w-5 h-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <h3 class="font-semibold text-white">Add New Book / Update Stock</h3>
+              </div>
+              <button type="button" id="closeAddBookBtn" class="text-slate-400 hover:text-white transition-colors">✕</button>
+            </div>
+            <form id="addBookForm" class="p-6 flex flex-wrap gap-4 items-end" autocomplete="off">
+              <div class="flex-1 min-w-[200px]">
+                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Book Title</label>
+                <input type="text" id="addBookTitle" class="w-full px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all text-sm" placeholder="Book Title" required>
+              </div>
+              <div class="flex-1 min-w-[200px]">
+                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Author</label>
+                <input type="text" id="addBookAuthor" class="w-full px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all text-sm" placeholder="Author" required>
+              </div>
+              <div class="w-[120px]">
+                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Quantity</label>
+                <input type="number" id="addBookQty" class="w-full px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all text-sm" placeholder="Qty" min="1" max="10" required>
+              </div>
+              <button type="submit" class="px-6 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-lg transition-all duration-200 text-sm hover:shadow-lg hover:shadow-emerald-500/20 active:scale-[0.98]">
+                Add / Update
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Book Cards Grid -->
+        <div id="bookGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 stagger">
+          <div class="col-span-full flex justify-center py-16">
+            <div class="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── MY BOOKS PANEL ── -->
+      <section id="myBooksPanel" class="panel hidden">
+        <h2 class="text-2xl font-bold text-white mb-1">My Books</h2>
+        <p class="text-sm text-slate-500 mb-6">Manage your borrowed items and track deadlines</p>
+
+        <!-- Sub-tabs -->
+        <div class="inline-flex bg-white/[0.03] border border-white/[0.06] rounded-lg p-1 mb-6">
+          <button class="mybooks-tab px-4 py-2 rounded-md text-sm font-medium bg-blue-500 text-white transition-all duration-200" data-subpanel="loansSubpanel">My Loans</button>
+          <button class="mybooks-tab px-4 py-2 rounded-md text-sm font-medium text-slate-400 hover:text-white transition-all duration-200" data-subpanel="borrowSubpanel">Borrow Book</button>
+          <button class="mybooks-tab px-4 py-2 rounded-md text-sm font-medium text-slate-400 hover:text-white transition-all duration-200" data-subpanel="returnSubpanel">Return Book</button>
+        </div>
+
+        <!-- Loans Sub-Panel -->
+        <div id="loansSubpanel" class="mybooks-subpanel">
+          <div class="bg-charcoal border border-white/[0.06] rounded-xl overflow-hidden">
+            <div class="px-6 py-4 border-b border-white/[0.06]">
+              <h3 class="font-semibold text-white flex items-center gap-2">
+                <svg class="w-5 h-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                Borrowed Items Timeline
+              </h3>
+            </div>
+            <div id="borrowedBooksList" class="p-4 space-y-3">
+              <div class="text-center py-12 text-slate-500">
+                <p class="text-sm">Loading your books...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Borrow Sub-Panel -->
+        <div id="borrowSubpanel" class="mybooks-subpanel hidden">
+          <div class="bg-charcoal border border-white/[0.06] rounded-xl p-6 max-w-lg">
+            <h3 class="font-semibold text-white mb-4">Borrow a New Book</h3>
+            <form id="borrowForm" class="space-y-4" autocomplete="off">
+              <div>
+                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Book Title</label>
+                <input type="text" id="borrowBookTitle" class="w-full px-4 py-3 bg-white/[0.04] border border-white/[0.08] rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all" placeholder="Enter exact book title" required>
+              </div>
+              <button type="submit" class="w-full py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-xl transition-all duration-200 hover:shadow-lg hover:shadow-blue-500/25 active:scale-[0.98]">Issue Book</button>
+            </form>
+
+            <!-- Checkout Confirmation -->
+            <div id="borrowConfirmation" class="hidden mt-5 p-4 bg-emerald-500/[0.06] border border-emerald-500/20 rounded-xl animate-fade-in-up">
+              <h4 class="text-sm font-semibold text-emerald-400 mb-3 flex items-center gap-2">✅ Book Checkout Confirmation</h4>
+              <div class="space-y-2 text-sm">
+                <div class="flex justify-between"><span class="text-slate-400">Book Title</span><span class="text-white font-medium" id="confBookTitle">--</span></div>
+                <div class="flex justify-between"><span class="text-slate-400">Issued Date</span><span class="text-white font-medium" id="confIssueDate">--</span></div>
+                <div class="flex justify-between"><span class="text-slate-400">Return Deadline</span><span class="text-white font-medium" id="confReturnDate">--</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Return Sub-Panel -->
+        <div id="returnSubpanel" class="mybooks-subpanel hidden">
+          <div class="bg-charcoal border border-white/[0.06] rounded-xl p-6 max-w-lg">
+            <h3 class="font-semibold text-white mb-4">Return a Book</h3>
+            <form id="returnForm" class="space-y-4" autocomplete="off">
+              <div>
+                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Book Title</label>
+                <input type="text" id="returnBookTitle" class="w-full px-4 py-3 bg-white/[0.04] border border-white/[0.08] rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all" placeholder="Enter exact book title" required>
+              </div>
+              <button type="submit" class="w-full py-3 bg-violet-500 hover:bg-violet-600 text-white font-semibold rounded-xl transition-all duration-200 hover:shadow-lg hover:shadow-violet-500/25 active:scale-[0.98]">Process Return</button>
+            </form>
+
+            <!-- Return Receipt -->
+            <div id="returnReceipt" class="hidden mt-5 p-4 bg-blue-500/[0.06] border border-blue-500/20 rounded-xl animate-fade-in-up">
+              <h4 class="text-sm font-semibold text-blue-400 mb-3 flex items-center gap-2">📋 Return Confirmation</h4>
+              <div class="space-y-2 text-sm">
+                <div class="flex justify-between"><span class="text-slate-400">Book Title</span><span class="text-white font-medium" id="receiptBookTitle">--</span></div>
+                <div class="flex justify-between"><span class="text-slate-400">Return Date</span><span class="text-white font-medium" id="receiptDate">--</span></div>
+                <div class="flex justify-between"><span class="text-slate-400">Status</span><span class="text-emerald-400 font-medium" id="receiptStatus">--</span></div>
+              </div>
+            </div>
+
+            <!-- Late Penalty -->
+            <div id="latePenalty" class="hidden mt-4 p-4 bg-amber-500/[0.06] border border-amber-500/20 rounded-xl">
+              <div class="flex items-center gap-2 mb-2">
+                <span class="px-2 py-0.5 bg-amber-500/15 text-amber-400 border border-amber-500/30 rounded-full text-[0.65rem] font-bold uppercase tracking-wider">Late Return</span>
+              </div>
+              <p class="text-sm font-semibold text-amber-400" id="penaltyAmount">--</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── SEARCH PANEL ── -->
+      <section id="searchPanel" class="panel hidden">
+        <h2 class="text-2xl font-bold text-white mb-1">Book Search</h2>
+        <p class="text-sm text-slate-500 mb-6">Look up any book by its exact title</p>
+
+        <div class="max-w-2xl">
+          <form id="bookSearchForm" class="flex gap-3 mb-6" autocomplete="off">
+            <div class="flex-1 relative">
+              <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
+              <input type="text" id="bookTitleInput" class="w-full pl-11 pr-4 py-3 bg-white/[0.04] border border-white/[0.08] rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all" placeholder="Search by book title...">
+            </div>
+            <button type="submit" class="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-xl transition-all duration-200 hover:shadow-lg hover:shadow-blue-500/25 active:scale-[0.98]">Search</button>
+          </form>
+          <div id="bookResultArea" class="hidden"></div>
+        </div>
+      </section>
+
+      <!-- ── REGISTER PANEL (admin) ── -->
+      <section id="registerPanel" class="panel hidden">
+        <h2 class="text-2xl font-bold text-white mb-1">Register Users</h2>
+        <p class="text-sm text-slate-500 mb-6">Add new students or faculty members to the system</p>
+
+        <!-- Sub-tabs -->
+        <div class="inline-flex bg-white/[0.03] border border-white/[0.06] rounded-lg p-1 mb-6">
+          <button class="register-tab px-4 py-2 rounded-md text-sm font-medium bg-blue-500 text-white transition-all duration-200" data-subpanel="regStudentSubpanel">Register Student</button>
+          <button class="register-tab px-4 py-2 rounded-md text-sm font-medium text-slate-400 hover:text-white transition-all duration-200" data-subpanel="regFacultySubpanel">Register Faculty</button>
+        </div>
+
+        <!-- Student Registration -->
+        <div id="regStudentSubpanel" class="register-subpanel">
+          <div class="bg-charcoal border border-white/[0.06] rounded-xl p-6 max-w-2xl">
+            <form id="registerStudentForm" class="grid grid-cols-1 sm:grid-cols-2 gap-4" autocomplete="off">
+              <div>
+                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Student ID</label>
+                <input type="text" id="regStudentId" class="w-full px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all text-sm" placeholder="Student ID" required>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Full Name</label>
+                <input type="text" id="regStudentName" class="w-full px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all text-sm" placeholder="Full Name" required>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Phone Number</label>
+                <input type="text" id="regStudentPhone" class="w-full px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all text-sm" placeholder="Phone Number" required>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Semester</label>
+                <input type="number" id="regStudentSem" class="w-full px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all text-sm" placeholder="Semester" min="1" max="8" required>
+              </div>
+              <div class="sm:col-span-2">
+                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Department</label>
+                <input type="text" id="regStudentDept" class="w-full px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all text-sm" placeholder="Department" required>
+              </div>
+              <div class="sm:col-span-2">
+                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Security Password (leave empty to use Student ID as default)</label>
+                <input type="password" id="regStudentPassword" class="w-full px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all text-sm" placeholder="Optional security password">
+              </div>
+              <div class="sm:col-span-2">
+                <button type="submit" class="w-full py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-xl transition-all duration-200 hover:shadow-lg hover:shadow-blue-500/25 active:scale-[0.98]">Register Student</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Faculty Registration -->
+        <div id="regFacultySubpanel" class="register-subpanel hidden">
+          <div class="bg-charcoal border border-white/[0.06] rounded-xl p-6 max-w-2xl">
+            <form id="registerFacultyForm" class="grid grid-cols-1 sm:grid-cols-2 gap-4" autocomplete="off">
+              <div>
+                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Faculty ID</label>
+                <input type="text" id="regFacultyId" class="w-full px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all text-sm" placeholder="Faculty ID" required>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Full Name</label>
+                <input type="text" id="regFacultyName" class="w-full px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all text-sm" placeholder="Full Name" required>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Phone Number</label>
+                <input type="text" id="regFacultyPhone" class="w-full px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all text-sm" placeholder="Phone Number" required>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Department</label>
+                <input type="text" id="regFacultyDept" class="w-full px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all text-sm" placeholder="Department" required>
+              </div>
+              <div class="sm:col-span-2">
+                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Security Password (leave empty to use Faculty ID as default)</label>
+                <input type="password" id="regFacultyPassword" class="w-full px-4 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all text-sm" placeholder="Optional security password">
+              </div>
+              <div class="sm:col-span-2">
+                <button type="submit" class="w-full py-3 bg-violet-500 hover:bg-violet-600 text-white font-semibold rounded-xl transition-all duration-200 hover:shadow-lg hover:shadow-violet-500/25 active:scale-[0.98]">Register Faculty</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── ACTIVE LOANS PANEL (admin only) ── -->
+      <section id="loansPanel" class="panel hidden" data-role="admin">
+        <div class="flex items-center justify-between flex-wrap gap-4 mb-6">
+          <div>
+            <h2 class="text-2xl font-bold text-white">Active Borrowings</h2>
+            <p class="text-sm text-slate-500 mt-0.5">Monitor books currently checked out by students and faculty</p>
+          </div>
+          <button id="refreshLoansBtn" class="flex items-center gap-2 px-4 py-2 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm font-medium text-slate-300 hover:bg-white/[0.08] hover:text-white transition-all duration-200">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182M2.985 19.644l3.181-3.183"/></svg>
+            Refresh
+          </button>
+        </div>
+
+        <!-- Loans Stats Row -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+          <div class="bg-charcoal border border-white/[0.06] rounded-xl p-5 relative overflow-hidden">
+            <div class="absolute top-0 left-0 right-0 h-[3px] bg-blue-500 rounded-t-xl"></div>
+            <p class="text-[0.7rem] font-semibold uppercase tracking-wider text-slate-400 mb-1">Student Borrowers</p>
+            <p class="text-3xl font-extrabold text-white" id="statStudentLoans">0</p>
+          </div>
+          <div class="bg-charcoal border border-white/[0.06] rounded-xl p-5 relative overflow-hidden">
+            <div class="absolute top-0 left-0 right-0 h-[3px] bg-violet-500 rounded-t-xl"></div>
+            <p class="text-[0.7rem] font-semibold uppercase tracking-wider text-slate-400 mb-1">Faculty Borrowers</p>
+            <p class="text-3xl font-extrabold text-white" id="statFacultyLoans">0</p>
+          </div>
+        </div>
+
+        <!-- Loans Container -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          
+          <!-- Student Loans Card -->
+          <div class="bg-charcoal border border-white/[0.06] rounded-xl overflow-hidden shadow-xl">
+            <div class="px-6 py-4 border-b border-white/[0.06] flex items-center gap-3">
+              <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
+              <h3 class="font-semibold text-white">Student Loans</h3>
+            </div>
+            <div class="p-4 overflow-x-auto">
+              <table class="w-full text-left text-sm border-collapse min-w-[500px]">
+                <thead>
+                  <tr class="border-b border-white/[0.06] text-slate-400 text-xs font-semibold uppercase tracking-wider">
+                    <th class="py-3 px-2">USN</th>
+                    <th class="py-3 px-2">Name</th>
+                    <th class="py-3 px-2">Branch/Dept</th>
+                    <th class="py-3 px-2 text-center">Sem</th>
+                    <th class="py-3 px-2">Book Title</th>
+                    <th class="py-3 px-2">Time Remaining</th>
+                    <th class="py-3 px-2 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="adminStudentLoansList" class="divide-y divide-white/[0.03]">
+                  <tr>
+                    <td colspan="7" class="py-8 text-center text-slate-500">No student active loans</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Faculty Loans Card -->
+          <div class="bg-charcoal border border-white/[0.06] rounded-xl overflow-hidden shadow-xl">
+            <div class="px-6 py-4 border-b border-white/[0.06] flex items-center gap-3">
+              <span class="w-2.5 h-2.5 rounded-full bg-violet-500"></span>
+              <h3 class="font-semibold text-white">Faculty Loans</h3>
+            </div>
+            <div class="p-4 overflow-x-auto">
+              <table class="w-full text-left text-sm border-collapse min-w-[350px]">
+                <thead>
+                  <tr class="border-b border-white/[0.06] text-slate-400 text-xs font-semibold uppercase tracking-wider">
+                    <th class="py-3 px-2">Faculty Name</th>
+                    <th class="py-3 px-2">Book Borrowed</th>
+                    <th class="py-3 px-2 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="adminFacultyLoansList" class="divide-y divide-white/[0.03]">
+                  <tr>
+                    <td colspan="3" class="py-8 text-center text-slate-500">No faculty active loans</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ── ACTIVE LOANS PANEL (admin only) ── -->
+      <section id="loansPanel" class="panel hidden" data-role="admin">
+        <div class="flex items-center justify-between flex-wrap gap-4 mb-6">
+          <div>
+            <h2 class="text-2xl font-bold text-white">Active Borrowings</h2>
+            <p class="text-sm text-slate-500 mt-0.5">Monitor books currently checked out by students and faculty</p>
+          </div>
+          <button id="refreshLoansBtn" class="flex items-center gap-2 px-4 py-2 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm font-medium text-slate-300 hover:bg-white/[0.08] hover:text-white transition-all duration-200">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182M2.985 19.644l3.181-3.183"/></svg>
+            Refresh
+          </button>
+        </div>
+
+        <!-- Loans Stats Row -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+          <div class="bg-charcoal border border-white/[0.06] rounded-xl p-5 relative overflow-hidden">
+            <div class="absolute top-0 left-0 right-0 h-[3px] bg-blue-500 rounded-t-xl"></div>
+            <p class="text-[0.7rem] font-semibold uppercase tracking-wider text-slate-400 mb-1">Student Borrowers</p>
+            <p class="text-3xl font-extrabold text-white" id="statStudentLoans">0</p>
+          </div>
+          <div class="bg-charcoal border border-white/[0.06] rounded-xl p-5 relative overflow-hidden">
+            <div class="absolute top-0 left-0 right-0 h-[3px] bg-violet-500 rounded-t-xl"></div>
+            <p class="text-[0.7rem] font-semibold uppercase tracking-wider text-slate-400 mb-1">Faculty Borrowers</p>
+            <p class="text-3xl font-extrabold text-white" id="statFacultyLoans">0</p>
+          </div>
+        </div>
+
+        <!-- Loans Container -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          
+          <!-- Student Loans Card -->
+          <div class="bg-charcoal border border-white/[0.06] rounded-xl overflow-hidden shadow-xl">
+            <div class="px-6 py-4 border-b border-white/[0.06] flex items-center gap-3">
+              <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
+              <h3 class="font-semibold text-white">Student Loans</h3>
+            </div>
+            <div class="p-4 overflow-x-auto">
+              <table class="w-full text-left text-sm border-collapse min-w-[500px]">
+                <thead>
+                  <tr class="border-b border-white/[0.06] text-slate-400 text-xs font-semibold uppercase tracking-wider">
+                    <th class="py-3 px-2">USN</th>
+                    <th class="py-3 px-2">Name</th>
+                    <th class="py-3 px-2">Branch/Dept</th>
+                    <th class="py-3 px-2 text-center">Sem</th>
+                    <th class="py-3 px-2">Book Title</th>
+                    <th class="py-3 px-2 text-right">Time Remaining</th>
+                  </tr>
+                </thead>
+                <tbody id="adminStudentLoansList" class="divide-y divide-white/[0.03]">
+                  <tr>
+                    <td colspan="6" class="py-8 text-center text-slate-500">No student active loans</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Faculty Loans Card -->
+          <div class="bg-charcoal border border-white/[0.06] rounded-xl overflow-hidden shadow-xl">
+            <div class="px-6 py-4 border-b border-white/[0.06] flex items-center gap-3">
+              <span class="w-2.5 h-2.5 rounded-full bg-violet-500"></span>
+              <h3 class="font-semibold text-white">Faculty Loans</h3>
+            </div>
+            <div class="p-4 overflow-x-auto">
+              <table class="w-full text-left text-sm border-collapse min-w-[350px]">
+                <thead>
+                  <tr class="border-b border-white/[0.06] text-slate-400 text-xs font-semibold uppercase tracking-wider">
+                    <th class="py-3 px-2">Faculty Name</th>
+                    <th class="py-3 px-2">Book Borrowed</th>
+                  </tr>
+                </thead>
+                <tbody id="adminFacultyLoansList" class="divide-y divide-white/[0.03]">
+                  <tr>
+                    <td colspan="2" class="py-8 text-center text-slate-500">No faculty active loans</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ── ACCOUNT PANEL ── -->
+      <section id="accountPanel" class="panel hidden">
+        <h2 class="text-2xl font-bold text-white mb-1">Account</h2>
+        <p class="text-sm text-slate-500 mb-6">Your profile information</p>
+
+        <div class="bg-charcoal border border-white/[0.06] rounded-xl p-6 max-w-2xl">
+          <div class="flex items-center gap-4 mb-6 pb-6 border-b border-white/[0.06]">
+            <div class="w-14 h-14 rounded-full bg-gradient-to-br from-blue-500/20 to-violet-500/20 border border-white/[0.08] flex items-center justify-center">
+              <span class="text-xl font-bold text-blue-400" id="acctInitial">?</span>
+            </div>
+            <div>
+              <p class="text-lg font-bold text-white" id="acctNameHeader">--</p>
+              <p class="text-xs text-slate-500 uppercase tracking-wider font-medium" id="acctRole">--</p>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="bg-white/[0.02] border border-white/[0.06] rounded-lg p-4">
+              <p class="text-[0.65rem] font-semibold uppercase tracking-wider text-slate-500 mb-1">ID</p>
+              <p class="text-sm font-semibold text-white" id="acctId">--</p>
+            </div>
+            <div class="bg-white/[0.02] border border-white/[0.06] rounded-lg p-4">
+              <p class="text-[0.65rem] font-semibold uppercase tracking-wider text-slate-500 mb-1">Full Name</p>
+              <p class="text-sm font-semibold text-white" id="acctName">--</p>
+            </div>
+            <div class="bg-white/[0.02] border border-white/[0.06] rounded-lg p-4">
+              <p class="text-[0.65rem] font-semibold uppercase tracking-wider text-slate-500 mb-1">Phone</p>
+              <p class="text-sm font-semibold text-white" id="acctPhone">--</p>
+            </div>
+            <div class="bg-white/[0.02] border border-white/[0.06] rounded-lg p-4">
+              <p class="text-[0.65rem] font-semibold uppercase tracking-wider text-slate-500 mb-1">Department</p>
+              <p class="text-sm font-semibold text-white" id="acctDept">--</p>
+            </div>
+            <div id="acctSemRow" class="bg-white/[0.02] border border-white/[0.06] rounded-lg p-4 hidden">
+              <p class="text-[0.65rem] font-semibold uppercase tracking-wider text-slate-500 mb-1">Semester</p>
+              <p class="text-sm font-semibold text-white" id="acctSem">--</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toastContainer" class="fixed bottom-6 right-6 flex flex-col gap-3 z-[9999]"></div>
+
+
+  <!-- ══════════════════════════════════════════════
+       JAVASCRIPT — API INTEGRATIONS & INTERACTIONS
+       ══════════════════════════════════════════════ -->
+  <script>
+  (function() {
+    'use strict';
+
+    const API_BASE = 'http://localhost:8080/api';
+
+    // ─── Application State ───
+    let currentRole = '';
+    let currentUserId = '';
+    let currentUserData = null;
+
+    // ─── DOM References ───
+    const loginScreen    = document.getElementById('loginScreen');
+    const dashboard      = document.getElementById('dashboard');
+    const sidebar        = document.getElementById('sidebar');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+    const toastContainer = document.getElementById('toastContainer');
+
+    // ═══════════════════════════════════════════
+    //  UTILITY FUNCTIONS
+    // ═══════════════════════════════════════════
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+    }
+
+    function formatDate(dateStr) {
+      if (!dateStr || dateStr === 'null') return '--';
+      return dateStr;
+    }
+
+    function showToast(message, type) {
+      type = type || 'success';
+      var colorMap = { success: 'border-l-emerald-500', error: 'border-l-red-500', info: 'border-l-blue-500' };
+      var iconMap  = { success: '✓', error: '✕', info: 'ℹ' };
+      var toast = document.createElement('div');
+      toast.className = 'flex items-center gap-3 px-5 py-3.5 bg-[#192135] border border-white/10 border-l-4 ' + (colorMap[type] || colorMap.info) + ' rounded-xl shadow-2xl text-sm font-medium text-white min-w-[280px] max-w-[400px] animate-toast-in';
+      toast.innerHTML = '<span class="text-base flex-shrink-0">' + (iconMap[type] || iconMap.info) + '</span><span>' + message + '</span>';
+      toastContainer.appendChild(toast);
+      setTimeout(function() {
+        toast.classList.remove('animate-toast-in');
+        toast.classList.add('animate-toast-out');
+        setTimeout(function() { toast.remove(); }, 300);
+      }, 3000);
+    }
+
+    // ═══════════════════════════════════════════
+    //  NAVIGATION
+    // ═══════════════════════════════════════════
+
+    function showPanel(panelId) {
+      document.querySelectorAll('.panel').forEach(function(p) { p.classList.add('hidden'); });
+      var panel = document.getElementById(panelId);
+      if (panel) {
+        panel.classList.remove('hidden');
+        panel.style.animation = 'none';
+        panel.offsetHeight; // reflow
+        panel.style.animation = 'fadeInUp 0.35s ease-out both';
+      }
+
+      // Update active nav styling
+      document.querySelectorAll('.nav-item').forEach(function(btn) {
+        var isActive = btn.dataset.panel === panelId;
+        btn.classList.toggle('bg-white/[0.08]', isActive);
+        btn.classList.toggle('text-white', isActive);
+        btn.classList.toggle('text-slate-300', !isActive);
+        var icon = btn.querySelector('svg');
+        if (icon) {
+          icon.classList.toggle('text-blue-400', isActive);
+          icon.classList.toggle('text-slate-400', !isActive);
+        }
+      });
+
+      // Auto-load data for specific panels
+      if (panelId === 'myBooksPanel') fetchMyBooks();
+      if (panelId === 'catalogPanel') fetchCatalog();
+      if (panelId === 'accountPanel') showAccountInfo();
+      if (panelId === 'loansPanel') fetchActiveLoans();
+
+      closeMobileSidebar();
+    }
+
+    function updateSidebarForRole() {
+      document.querySelectorAll('[data-role]').forEach(function(el) {
+        var roles = el.dataset.role.split(',');
+        el.classList.toggle('hidden', roles.indexOf(currentRole) === -1);
+      });
+      if (currentUserData) {
+        var name = currentUserData.name || 'Administrator';
+        document.getElementById('sidebarUserName').textContent = name;
+        document.getElementById('sidebarUserRole').textContent = currentRole.charAt(0).toUpperCase() + currentRole.slice(1);
+        document.getElementById('sidebarUserInitial').textContent = name.charAt(0).toUpperCase();
+      }
+    }
+
+    // ─── Mobile Sidebar ───
+    function openMobileSidebar() {
+      sidebar.classList.remove('-translate-x-full');
+      sidebar.classList.add('translate-x-0');
+      sidebarOverlay.classList.remove('hidden');
+    }
+    function closeMobileSidebar() {
+      sidebar.classList.add('-translate-x-full');
+      sidebar.classList.remove('translate-x-0');
+      sidebarOverlay.classList.add('hidden');
+    }
+
+    // ═══════════════════════════════════════════
+    //  LOGIN HANDLERS
+    // ═══════════════════════════════════════════
+
+    function handleStudentLogin(studentId, password) {
+      fetch(API_BASE + '/student', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'action=login&stuId=' + encodeURIComponent(studentId) + '&password=' + encodeURIComponent(password)
+      })
+      .then(function(res) { return res.json(); })
+      .then(function(data) {
+        if (data.success && data.student) {
+          currentRole = 'student';
+          currentUserId = studentId;
+          currentUserData = data.student;
+          enterDashboard();
+        } else {
+          showToast(data.message || 'Invalid credentials.', 'error');
+        }
+      })
+      .catch(function(err) {
+        console.error(err);
+        showToast('Failed to connect to server. Is the backend running?', 'error');
+      });
+    }
+
+    function handleFacultyLogin(facultyId, password) {
+      fetch(API_BASE + '/faculty', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'action=login&facId=' + encodeURIComponent(facultyId) + '&password=' + encodeURIComponent(password)
+      })
+      .then(function(res) { return res.json(); })
+      .then(function(data) {
+        if (data.success && data.faculty) {
+          currentRole = 'faculty';
+          currentUserId = facultyId;
+          currentUserData = data.faculty;
+          enterDashboard();
+        } else {
+          showToast(data.message || 'Invalid credentials.', 'error');
+        }
+      })
+      .catch(function(err) {
+        console.error(err);
+        showToast('Failed to connect to server. Is the backend running?', 'error');
+      });
+    }
+
+    function handleAdminLogin(password) {
+      fetch(API_BASE + '/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'username=admin&password=' + encodeURIComponent(password)
+      })
+      .then(function(res) { return res.json(); })
+      .then(function(data) {
+        if (data.success) {
+          currentRole = 'admin';
+          currentUserId = 'ADMIN';
+          currentUserData = { name: 'Administrator' };
+          enterDashboard();
+        } else {
+          showToast(data.message || 'Invalid admin credentials.', 'error');
+        }
+      })
+      .catch(function(err) {
+        console.error(err);
+        showToast('Failed to connect to server. Is the backend running?', 'error');
+      });
+    }
+
+    function enterDashboard() {
+      loginScreen.classList.add('hidden');
+      dashboard.classList.remove('hidden');
+      updateSidebarForRole();
+      showPanel('catalogPanel');
+      showToast('Welcome, ' + escapeHtml(currentUserData.name || 'Admin') + '!');
+    }
+
+    function logout() {
+      dashboard.classList.add('hidden');
+      loginScreen.classList.remove('hidden');
+      currentRole = '';
+      currentUserId = '';
+      currentUserData = null;
+      // Reset login forms
+      document.querySelectorAll('.login-form input').forEach(function(i) { i.value = ''; });
+      // Reset and hide Add Book Section
+      document.getElementById('addBookForm').reset();
+      document.getElementById('addBookSection').classList.add('hidden');
+      showToast('Signed out successfully.');
+    }
+
+    // ═══════════════════════════════════════════
+    //  CATALOG
+    // ═══════════════════════════════════════════
+
+    function fetchCatalog() {
+      var grid = document.getElementById('bookGrid');
+      grid.innerHTML = '<div class="col-span-full flex justify-center py-16"><div class="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div></div>';
+
+      fetch(API_BASE + '/catalog')
+      .then(function(res) { return res.json(); })
+      .then(function(data) {
+        if (data.success) {
+          document.getElementById('statTotalTitles').textContent = data.totalTitles;
+          document.getElementById('statTotalCopies').textContent = data.totalCopies;
+          var oos = data.books.filter(function(b) { return b.quantity <= 0; }).length;
+          document.getElementById('statOutOfStock').textContent = oos;
+
+          if (data.books.length === 0) {
+            grid.innerHTML = '<div class="col-span-full text-center py-16 text-slate-500"><p class="text-4xl mb-3 opacity-50">📚</p><p class="font-medium">No books in the catalog</p><p class="text-sm mt-1">Add books using the admin panel</p></div>';
+            return;
+          }
+          grid.innerHTML = '';
+          grid.classList.add('stagger');
+          data.books.forEach(function(book) {
+            grid.appendChild(createBookCard(book));
+          });
+        } else {
+          grid.innerHTML = '<div class="col-span-full text-center py-16 text-slate-500"><p>Failed to load catalog.</p></div>';
+        }
+      })
+      .catch(function(err) {
+        console.error(err);
+        grid.innerHTML = '<div class="col-span-full text-center py-16"><p class="text-red-400 font-medium">Server connection failed</p><p class="text-sm text-slate-500 mt-1">Make sure the Java backend is running on port 8080</p></div>';
+      });
+    }
+
+    function createBookCard(book) {
+      var div = document.createElement('div');
+      div.className = 'bg-charcoal border border-white/[0.06] rounded-xl p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-blue-500/[0.06] hover:border-white/[0.12] cursor-default animate-fade-in-up';
+
+      var badgeClass, badgeText;
+      if (book.quantity >= 3) {
+        badgeClass = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+        badgeText = 'In Stock &middot; ' + book.quantity + ' copies';
+      } else if (book.quantity > 0) {
+        badgeClass = 'bg-amber-500/10 text-amber-400 border-amber-500/20';
+        badgeText = 'Low Stock &middot; ' + book.quantity + ' left';
+      } else {
+        badgeClass = 'bg-red-500/10 text-red-400 border-red-500/20';
+        badgeText = 'Out of Stock';
+      }
+
+      div.innerHTML =
+        '<div class="w-11 h-11 rounded-lg bg-blue-500/10 flex items-center justify-center mb-4">' +
+          '<svg class="w-5 h-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/></svg>' +
+        '</div>' +
+        '<h3 class="font-semibold text-white text-[0.95rem] mb-1 line-clamp-2">' + escapeHtml(book.title) + '</h3>' +
+        '<p class="text-slate-400 text-sm mb-3 truncate">' + escapeHtml(book.author) + '</p>' +
+        '<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border ' + badgeClass + '">' + badgeText + '</span>';
+
+      return div;
+    }
+
+    // ═══════════════════════════════════════════
+    //  MY BOOKS — LOAN TIMELINE
+    // ═══════════════════════════════════════════
+
+    function fetchMyBooks() {
+      if (currentRole === 'admin') return;
+      var endpoint = currentRole === 'student' ? 'student' : 'faculty';
+      var idParam  = currentRole === 'student' ? 'stuId' : 'facId';
+
+      fetch(API_BASE + '/' + endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'action=profile&' + idParam + '=' + encodeURIComponent(currentUserId)
+      })
+      .then(function(res) { return res.json(); })
+      .then(function(data) {
+        var userData = data.student || data.faculty;
+        if (data.success && userData) {
+          currentUserData = userData;
+          renderBorrowedBooks(userData.borrowedBooks || []);
+        }
+      })
+      .catch(function(err) { console.error(err); });
+    }
+
+    function renderBorrowedBooks(books) {
+      var container = document.getElementById('borrowedBooksList');
+      if (!books || books.length === 0) {
+        container.innerHTML =
+          '<div class="text-center py-12 text-slate-500">' +
+            '<svg class="w-12 h-12 mx-auto mb-3 text-slate-600 opacity-50" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/></svg>' +
+            '<p class="font-medium">No books checked out</p>' +
+            '<p class="text-sm mt-1">Use the Borrow tab to check out a book</p>' +
+          '</div>';
+        return;
+      }
+
+      container.innerHTML = '';
+      books.forEach(function(book) {
+        var progress = calculateProgress(book.issuedDate, book.returnDate);
+        var row = document.createElement('div');
+        row.className = 'bg-white/[0.02] border border-white/[0.06] rounded-xl p-4 animate-fade-in-up';
+
+        var remainingClass = 'text-slate-400';
+        var remainingText = progress.remaining + ' days remaining';
+        if (progress.remaining < 0) {
+          remainingClass = 'text-red-400';
+          remainingText = 'Overdue by ' + Math.abs(progress.remaining) + ' days';
+        } else if (progress.remaining <= 3) {
+          remainingClass = 'text-amber-400';
+        }
+
+        row.innerHTML =
+          '<div class="flex items-start justify-between mb-2 gap-3">' +
+            '<h4 class="font-semibold text-white text-sm">' + escapeHtml(book.title) + '</h4>' +
+            '<span class="text-xs font-medium whitespace-nowrap ' + remainingClass + '">' + remainingText + '</span>' +
+          '</div>' +
+          '<div class="flex items-center gap-4 text-xs text-slate-500 mb-3">' +
+            '<span>Issued: <span class="text-slate-300">' + formatDate(book.issuedDate) + '</span></span>' +
+            '<span>Due: <span class="text-slate-300">' + formatDate(book.returnDate) + '</span></span>' +
+          '</div>' +
+          '<div class="w-full h-1.5 bg-white/[0.06] rounded-full overflow-hidden">' +
+            '<div class="h-full ' + progress.color + ' rounded-full transition-all duration-700 ease-out" style="width:' + progress.percent + '%"></div>' +
+          '</div>';
+
+        container.appendChild(row);
+      });
+    }
+
+    function calculateProgress(issueDateStr, returnDateStr) {
+      var issue = new Date(issueDateStr);
+      var due   = new Date(returnDateStr);
+      var now   = new Date();
+
+      var totalDays = Math.max(1, (due - issue) / 86400000);
+      var elapsed   = (now - issue) / 86400000;
+      var remaining = Math.ceil((due - now) / 86400000);
+
+      var percent = Math.min(100, Math.max(0, (elapsed / totalDays) * 100));
+      if (remaining < 0) percent = 100;
+
+      var color = 'bg-blue-500';
+      if (percent >= 85 || remaining < 0) color = 'bg-red-500';
+      else if (percent >= 60) color = 'bg-amber-500';
+
+      return { percent: Math.round(percent), color: color, remaining: remaining };
+    }
+
+    // ═══════════════════════════════════════════
+    //  BORROW & RETURN
+    // ═══════════════════════════════════════════
+
+    function handleBorrow(bookTitle) {
+      var endpoint = currentRole === 'student' ? 'student' : 'faculty';
+      var idParam  = currentRole === 'student' ? 'stuId' : 'facId';
+
+      fetch(API_BASE + '/' + endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'action=borrow&' + idParam + '=' + encodeURIComponent(currentUserId) + '&bookTitle=' + encodeURIComponent(bookTitle)
+      })
+      .then(function(res) { return res.json(); })
+      .then(function(data) {
+        if (data.success) {
+          showToast(data.message || 'Book borrowed successfully!');
+          document.getElementById('confBookTitle').textContent = bookTitle;
+          document.getElementById('confIssueDate').textContent = formatDate(data.issuedDate);
+          document.getElementById('confReturnDate').textContent = formatDate(data.returnDate);
+          document.getElementById('borrowConfirmation').classList.remove('hidden');
+          document.getElementById('borrowBookTitle').value = '';
+          var userData = data.student || data.faculty;
+          if (userData) { currentUserData = userData; renderBorrowedBooks(userData.borrowedBooks || []); }
+        } else {
+          showToast(data.message || 'Failed to borrow book.', 'error');
+        }
+      })
+      .catch(function(err) { console.error(err); showToast('Network error.', 'error'); });
+    }
+
+    function handleReturn(bookTitle) {
+      var endpoint = currentRole === 'student' ? 'student' : 'faculty';
+      var idParam  = currentRole === 'student' ? 'stuId' : 'facId';
+
+      fetch(API_BASE + '/' + endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'action=return&' + idParam + '=' + encodeURIComponent(currentUserId) + '&bookTitle=' + encodeURIComponent(bookTitle)
+      })
+      .then(function(res) { return res.json(); })
+      .then(function(data) {
+        if (data.success) {
+          showToast(data.message || 'Book returned successfully!');
+          document.getElementById('receiptBookTitle').textContent = bookTitle;
+          document.getElementById('receiptDate').textContent = new Date().toISOString().split('T')[0];
+          document.getElementById('receiptStatus').textContent = 'Returned Successfully';
+          document.getElementById('returnReceipt').classList.remove('hidden');
+
+          var penalty = document.getElementById('latePenalty');
+          if (data.daysLate > 0) {
+            document.getElementById('penaltyAmount').textContent = '\u20B9' + data.fine + ' (' + data.daysLate + ' days late)';
+            penalty.classList.remove('hidden');
+          } else {
+            penalty.classList.add('hidden');
+          }
+
+          document.getElementById('returnBookTitle').value = '';
+          var userData = data.profile && (data.profile.student || data.profile.faculty);
+          if (userData) { currentUserData = userData; renderBorrowedBooks(userData.borrowedBooks || []); }
+          else { fetchMyBooks(); }
+        } else {
+          showToast(data.message || 'Failed to return book.', 'error');
+        }
+      })
+      .catch(function(err) { console.error(err); showToast('Network error.', 'error'); });
+    }
+
+    // ═══════════════════════════════════════════
+    //  BOOK SEARCH
+    // ═══════════════════════════════════════════
+
+    function handleSearch(title) {
+      var resultArea = document.getElementById('bookResultArea');
+
+      fetch(API_BASE + '/search?title=' + encodeURIComponent(title))
+      .then(function(res) { return res.json(); })
+      .then(function(data) {
+        resultArea.classList.remove('hidden');
+        if (data.found) {
+          var badgeClass, badgeText;
+          if (data.quantity >= 3) { badgeClass = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'; badgeText = 'In Stock &middot; ' + data.quantity + ' copies'; }
+          else if (data.quantity > 0) { badgeClass = 'bg-amber-500/10 text-amber-400 border-amber-500/20'; badgeText = 'Low Stock &middot; ' + data.quantity + ' left'; }
+          else { badgeClass = 'bg-red-500/10 text-red-400 border-red-500/20'; badgeText = 'Out of Stock'; }
+
+          resultArea.innerHTML =
+            '<div class="bg-charcoal border border-white/[0.06] rounded-xl p-6 max-w-md animate-fade-in-up">' +
+              '<div class="w-12 h-12 rounded-lg bg-blue-500/10 flex items-center justify-center mb-4">' +
+                '<svg class="w-6 h-6 text-blue-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/></svg>' +
+              '</div>' +
+              '<h3 class="font-bold text-white text-lg mb-1">' + escapeHtml(data.title) + '</h3>' +
+              '<p class="text-slate-400 mb-3">' + escapeHtml(data.author) + '</p>' +
+              '<span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold border ' + badgeClass + '">' + badgeText + '</span>' +
+            '</div>';
+          showToast('Book found!');
+        } else {
+          resultArea.innerHTML =
+            '<div class="bg-red-500/[0.04] border border-red-500/20 rounded-xl p-6 max-w-md animate-fade-in-up">' +
+              '<h3 class="font-bold text-red-400 mb-1">Not Found</h3>' +
+              '<p class="text-slate-400 text-sm">' + escapeHtml(data.message || 'This book does not exist in the catalog.') + '</p>' +
+            '</div>';
+          showToast(data.message || 'Book not found.', 'error');
+        }
+      })
+      .catch(function(err) { console.error(err); showToast('Server connection failed.', 'error'); });
+    }
+
+    // ═══════════════════════════════════════════
+    //  ADMIN — ADD BOOK
+    // ═══════════════════════════════════════════
+
+    function handleAddBook(bookTitle, author, quantity) {
+      fetch(API_BASE + '/addbook', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'bookTitle=' + encodeURIComponent(bookTitle) + '&author=' + encodeURIComponent(author) + '&quantity=' + encodeURIComponent(quantity)
+      })
+      .then(function(res) { return res.json(); })
+      .then(function(data) {
+        if (data.success) {
+          showToast(data.message || 'Book stock updated!');
+          document.getElementById('addBookForm').reset();
+          document.getElementById('addBookSection').classList.add('hidden');
+          fetchCatalog();
+        } else {
+          showToast(data.message || 'Failed to update stock.', 'error');
+        }
+      })
+      .catch(function(err) { console.error(err); showToast('Network error.', 'error'); });
+    }
+
+    // ═══════════════════════════════════════════
+    //  ADMIN — ACTIVE LOANS
+    // ═══════════════════════════════════════════
+
+    function fetchActiveLoans() {
+      if (currentRole !== 'admin') return;
+
+      var stuTable = document.getElementById('adminStudentLoansList');
+      var facTable = document.getElementById('adminFacultyLoansList');
+
+      stuTable.innerHTML = '<tr><td colspan="6" class="py-8 text-center text-slate-500"><div class="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto"></div></td></tr>';
+      facTable.innerHTML = '<tr><td colspan="2" class="py-8 text-center text-slate-500"><div class="w-5 h-5 border-2 border-violet-500 border-t-transparent rounded-full animate-spin mx-auto"></div></td></tr>';
+
+      fetch(API_BASE + '/admin/loans')
+      .then(function(res) { return res.json(); })
+      .then(function(data) {
+        if (data.success) {
+          // Update stats
+          document.getElementById('statStudentLoans').textContent = data.studentLoans.length;
+          document.getElementById('statFacultyLoans').textContent = data.facultyLoans.length;
+
+          // Render students
+          if (data.studentLoans.length === 0) {
+            stuTable.innerHTML = '<tr><td colspan="7" class="py-8 text-center text-slate-500">No student active loans</td></tr>';
+          } else {
+            stuTable.innerHTML = '';
+            data.studentLoans.forEach(function(loan) {
+              var tr = document.createElement('tr');
+              tr.className = 'text-slate-300 hover:bg-white/[0.02] transition-colors border-b border-white/[0.03]';
+              
+              var timeRemaining = calculateDaysRemaining(loan.returnDate);
+              var timeClass = timeRemaining.remaining < 0 ? 'text-red-400 font-semibold' : (timeRemaining.remaining <= 3 ? 'text-amber-400 font-semibold' : 'text-blue-400');
+              var timeText = timeRemaining.remaining < 0 ? 'Overdue by ' + Math.abs(timeRemaining.remaining) + ' days' : timeRemaining.remaining + ' days';
+              
+              tr.innerHTML = 
+                '<td class="py-3 px-2 font-mono text-xs">' + escapeHtml(loan.usn) + '</td>' +
+                '<td class="py-3 px-2 font-medium text-white">' + escapeHtml(loan.name) + '</td>' +
+                '<td class="py-3 px-2">' + escapeHtml(loan.branch) + '</td>' +
+                '<td class="py-3 px-2 text-center">' + loan.sem + '</td>' +
+                '<td class="py-3 px-2 font-medium text-slate-200">' + escapeHtml(loan.bookTitle) + '</td>' +
+                '<td class="py-3 px-2 ' + timeClass + '">' + timeText + '</td>' +
+                '<td class="py-3 px-2 text-right"><button class="px-2.5 py-1 bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white border border-red-500/20 rounded text-xs font-semibold transition-all duration-200" onclick="window.adminReturnBook(\'student\', \'' + escapeHtml(loan.usn) + '\', \'' + escapeHtml(loan.bookTitle).replace(/'/g, "\\'") + '\')">Return</button></td>';
+              stuTable.appendChild(tr);
+            });
+          }
+
+          // Render faculty
+          if (data.facultyLoans.length === 0) {
+            facTable.innerHTML = '<tr><td colspan="3" class="py-8 text-center text-slate-500">No faculty active loans</td></tr>';
+          } else {
+            facTable.innerHTML = '';
+            data.facultyLoans.forEach(function(loan) {
+              var tr = document.createElement('tr');
+              tr.className = 'text-slate-300 hover:bg-white/[0.02] transition-colors border-b border-white/[0.03]';
+              tr.innerHTML = 
+                '<td class="py-3 px-2 font-medium text-white">' + escapeHtml(loan.name) + '</td>' +
+                '<td class="py-3 px-2 text-slate-200">' + escapeHtml(loan.bookTitle) + '</td>' +
+                '<td class="py-3 px-2 text-right"><button class="px-2.5 py-1 bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white border border-red-500/20 rounded text-xs font-semibold transition-all duration-200" onclick="window.adminReturnBook(\'faculty\', \'' + escapeHtml(loan.facId) + '\', \'' + escapeHtml(loan.bookTitle).replace(/'/g, "\\'") + '\')">Return</button></td>';
+              facTable.appendChild(tr);
+            });
+          }
+        } else {
+          showToast('Failed to load active loans.', 'error');
+        }
+      })
+      .catch(function(err) {
+        console.error(err);
+        showToast('Server connection failed.', 'error');
+      });
+    }
+
+    function calculateDaysRemaining(returnDateStr) {
+      var due = new Date(returnDateStr);
+      var now = new Date();
+      due.setHours(0,0,0,0);
+      now.setHours(0,0,0,0);
+      var remaining = Math.ceil((due - now) / 86400000);
+      return { remaining: remaining };
+    }
+
+    window.adminReturnBook = function(userType, id, bookTitle) {
+      if (currentRole !== 'admin') return;
+      if (!confirm("Are you sure you want to process a return for this book?")) return;
+
+      var endpoint = userType === 'student' ? 'student' : 'faculty';
+      var idParam  = userType === 'student' ? 'stuId' : 'facId';
+
+      fetch(API_BASE + '/' + endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'action=return&' + idParam + '=' + encodeURIComponent(id) + '&bookTitle=' + encodeURIComponent(bookTitle)
+      })
+      .then(function(res) { return res.json(); })
+      .then(function(data) {
+        if (data.success) {
+          showToast('Book returned successfully!');
+          fetchActiveLoans();
+        } else {
+          showToast(data.message || 'Failed to return book.', 'error');
+        }
+      })
+      .catch(function(err) { console.error(err); showToast('Network error.', 'error'); });
+    };
+
+    // ═══════════════════════════════════════════
+    //  ADMIN — REGISTER USERS
+    // ═══════════════════════════════════════════
+
+    function handleRegisterStudent(id, name, phoneNum, sem, dept, password) {
+      fetch(API_BASE + '/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'userType=Student&id=' + encodeURIComponent(id) + '&name=' + encodeURIComponent(name) + '&phoneNum=' + encodeURIComponent(phoneNum) + '&sem=' + encodeURIComponent(sem) + '&dept=' + encodeURIComponent(dept) + '&password=' + encodeURIComponent(password)
+      })
+      .then(function(res) { return res.json(); })
+      .then(function(data) {
+        if (data.success) { 
+          showToast(data.message || 'Student registered!'); 
+          document.getElementById('registerStudentForm').reset(); 
+        } else { 
+          showToast(data.message || 'Registration failed.', 'error'); 
+        }
+      })
+      .catch(function(err) { console.error(err); showToast('Network error.', 'error'); });
+    }
+
+    function handleRegisterFaculty(id, name, phoneNum, dept, password) {
+      fetch(API_BASE + '/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'userType=Faculty&id=' + encodeURIComponent(id) + '&name=' + encodeURIComponent(name) + '&phoneNum=' + encodeURIComponent(phoneNum) + '&dept=' + encodeURIComponent(dept) + '&password=' + encodeURIComponent(password)
+      })
+      .then(function(res) { return res.json(); })
+      .then(function(data) {
+        if (data.success) { 
+          showToast(data.message || 'Faculty registered!'); 
+          document.getElementById('registerFacultyForm').reset(); 
+        } else { 
+          showToast(data.message || 'Registration failed.', 'error'); 
+        }
+      })
+      .catch(function(err) { console.error(err); showToast('Network error.', 'error'); });
+    }
+
+    // ═══════════════════════════════════════════
+    //  ACCOUNT INFO
+    // ═══════════════════════════════════════════
+
+    function showAccountInfo() {
+      if (!currentUserData) return;
+      var name = currentUserData.name || '--';
+      document.getElementById('acctInitial').textContent = name.charAt(0).toUpperCase();
+      document.getElementById('acctNameHeader').textContent = name;
+      document.getElementById('acctRole').textContent = currentRole.charAt(0).toUpperCase() + currentRole.slice(1);
+      document.getElementById('acctId').textContent = currentUserData.id || currentUserId;
+      document.getElementById('acctName').textContent = name;
+      document.getElementById('acctPhone').textContent = currentUserData.phoneNum || '--';
+      document.getElementById('acctDept').textContent = currentUserData.dept || '--';
+      var semRow = document.getElementById('acctSemRow');
+      if (currentRole === 'student') { semRow.classList.remove('hidden'); document.getElementById('acctSem').textContent = currentUserData.sem || '--'; }
+      else { semRow.classList.add('hidden'); }
+    }
+
+    // ═══════════════════════════════════════════
+    //  TAB SWITCHING HELPERS
+    // ═══════════════════════════════════════════
+
+    function setupTabGroup(tabSelector, panelSelector) {
+      document.querySelectorAll(tabSelector).forEach(function(tab) {
+        tab.addEventListener('click', function() {
+          document.querySelectorAll(tabSelector).forEach(function(t) {
+            t.classList.remove('bg-blue-500', 'text-white');
+            t.classList.add('text-slate-400');
+          });
+          tab.classList.add('bg-blue-500', 'text-white');
+          tab.classList.remove('text-slate-400');
+          document.querySelectorAll(panelSelector).forEach(function(p) { p.classList.add('hidden'); });
+          var target = tab.dataset.subpanel || tab.dataset.form;
+          if (target) document.getElementById(target).classList.remove('hidden');
+        });
+      });
+    }
+
+    // ═══════════════════════════════════════════
+    //  INITIALIZATION
+    // ═══════════════════════════════════════════
+
+    function init() {
+      // Login tabs
+      document.querySelectorAll('.login-tab').forEach(function(tab) {
+        tab.addEventListener('click', function() {
+          document.querySelectorAll('.login-tab').forEach(function(t) {
+            t.classList.remove('border-blue-500', 'text-white');
+            t.classList.add('border-transparent', 'text-slate-400');
+          });
+          tab.classList.add('border-blue-500', 'text-white');
+          tab.classList.remove('border-transparent', 'text-slate-400');
+          document.querySelectorAll('.login-form').forEach(function(f) { f.classList.add('hidden'); });
+          document.getElementById(tab.dataset.form).classList.remove('hidden');
+        });
+      });
+
+      // Sidebar nav
+      document.querySelectorAll('.nav-item').forEach(function(btn) {
+        btn.addEventListener('click', function() { showPanel(btn.dataset.panel); });
+      });
+
+      // My Books tabs
+      setupTabGroup('.mybooks-tab', '.mybooks-subpanel');
+      // Register tabs
+      setupTabGroup('.register-tab', '.register-subpanel');
+
+      // Mobile sidebar
+      document.getElementById('hamburgerBtn').addEventListener('click', openMobileSidebar);
+      sidebarOverlay.addEventListener('click', closeMobileSidebar);
+
+      // Logout
+      document.getElementById('logoutBtn').addEventListener('click', logout);
+
+      // Add Book Section toggle
+      var addBookSec = document.getElementById('addBookSection');
+      document.getElementById('toggleAddBookBtn').addEventListener('click', function() {
+        if (currentRole !== 'admin') return;
+        if (addBookSec.classList.contains('hidden')) {
+          addBookSec.classList.remove('hidden');
+          document.getElementById('addBookTitle').focus();
+        } else {
+          addBookSec.classList.add('hidden');
+        }
+      });
+      document.getElementById('closeAddBookBtn').addEventListener('click', function() {
+        addBookSec.classList.add('hidden');
+      });
+
+      // Refresh catalog
+      document.getElementById('refreshCatalogBtn').addEventListener('click', function() {
+        fetchCatalog();
+        showToast('Catalog refreshed!', 'info');
+      });
+
+      // Refresh loans
+      document.getElementById('refreshLoansBtn').addEventListener('click', function() {
+        fetchActiveLoans();
+        showToast('Active loans list refreshed!', 'info');
+      });
+
+      // Refresh loans
+      document.getElementById('refreshLoansBtn').addEventListener('click', function() {
+        fetchActiveLoans();
+        showToast('Active loans list refreshed!', 'info');
+      });
+
+      // ─── Form Submissions ───
+
+      document.getElementById('studentLoginForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        var id = document.getElementById('studentLoginId').value.trim();
+        var pw = document.getElementById('studentLoginPassword').value;
+        if (!id) { showToast('Please enter your Student ID.', 'error'); return; }
+        if (!pw) { showToast('Please enter your password.', 'error'); return; }
+        handleStudentLogin(id, pw);
+      });
+
+      document.getElementById('facultyLoginForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        var id = document.getElementById('facultyLoginId').value.trim();
+        var pw = document.getElementById('facultyLoginPassword').value;
+        if (!id) { showToast('Please enter your Faculty ID.', 'error'); return; }
+        if (!pw) { showToast('Please enter your password.', 'error'); return; }
+        handleFacultyLogin(id, pw);
+      });
+
+      document.getElementById('adminLoginForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        var pw = document.getElementById('adminLoginPassword').value.trim();
+        if (!pw) { showToast('Please enter the admin password.', 'error'); return; }
+        handleAdminLogin(pw);
+      });
+
+      document.getElementById('bookSearchForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        var title = document.getElementById('bookTitleInput').value.trim();
+        if (!title) { showToast('Please enter a book title.', 'error'); return; }
+        handleSearch(title);
+      });
+
+      document.getElementById('borrowForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        var title = document.getElementById('borrowBookTitle').value.trim();
+        if (!title) { showToast('Please enter a book title.', 'error'); return; }
+        handleBorrow(title);
+      });
+
+      document.getElementById('returnForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        var title = document.getElementById('returnBookTitle').value.trim();
+        if (!title) { showToast('Please enter a book title.', 'error'); return; }
+        handleReturn(title);
+      });
+
+      document.getElementById('addBookForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        if (currentRole !== 'admin') { showToast('Unauthorized action.', 'error'); return; }
+        var t = document.getElementById('addBookTitle').value.trim();
+        var a = document.getElementById('addBookAuthor').value.trim();
+        var q = document.getElementById('addBookQty').value.trim();
+        if (!t || !a || !q) { showToast('All fields are required.', 'error'); return; }
+        handleAddBook(t, a, q);
+      });
+
+      document.getElementById('registerStudentForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        var id = document.getElementById('regStudentId').value.trim();
+        var nm = document.getElementById('regStudentName').value.trim();
+        var ph = document.getElementById('regStudentPhone').value.trim();
+        var sm = document.getElementById('regStudentSem').value.trim();
+        var dp = document.getElementById('regStudentDept').value.trim();
+        var pw = document.getElementById('regStudentPassword').value;
+        if (!id || !nm || !ph || !sm || !dp) { showToast('All fields are required.', 'error'); return; }
+        handleRegisterStudent(id, nm, ph, sm, dp, pw);
+      });
+
+      document.getElementById('registerFacultyForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        var id = document.getElementById('regFacultyId').value.trim();
+        var nm = document.getElementById('regFacultyName').value.trim();
+        var ph = document.getElementById('regFacultyPhone').value.trim();
+        var dp = document.getElementById('regFacultyDept').value.trim();
+        var pw = document.getElementById('regFacultyPassword').value;
+        if (!id || !nm || !ph || !dp) { showToast('All fields are required.', 'error'); return; }
+        handleRegisterFaculty(id, nm, ph, dp, pw);
+      });
+    }
+
+    init();
+  })();
+  </script>
+
+</body>
+</html>
